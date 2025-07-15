@@ -1,0 +1,31 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build",
+			"type": "shell",
+			"command": "colcon",
+			"args": [
+				"build",
+				"--symlink-install",
+				"--merge-install"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "turtlebot",
+			"type": "shell",
+			"command": "ros2",
+			"args": [
+				"launch",
+				"turtlebot4_gz_bringup",
+				"turtlebot4_gz.launch.py"
+			],
+			"group": "test",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

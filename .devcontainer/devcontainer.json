@@ -1,0 +1,15 @@
+{
+    "name": "Quickstart Rapid Robotics Research Workbook",
+    "image": "johnny555/rrrw:v1",
+    "remoteUser": "ubuntu",
+    "overrideCommand": false,
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace",
+    "containerEnv": {
+        "DISPLAY": ":1"
+    },
+    "appPort": [
+        "6000:80"
+    ]
+    
+}
