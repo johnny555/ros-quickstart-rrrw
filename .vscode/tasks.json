@@ -20,8 +20,9 @@
 			"command": "ros2",
 			"args": [
 				"launch",
-				"turtlebot4_gz_bringup",
-				"turtlebot4_gz.launch.py"
+				"simple_commander",
+				"turtlebot4_teleop.launch.py",
+				"world:=maze"
 			],
 			"group": "test",
 			"isBackground": true,
