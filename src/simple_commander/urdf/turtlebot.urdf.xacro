@@ -35,16 +35,15 @@
   
   <gazebo>
      <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-      <ros>
-        <remapping>/diff_drive_base_controller/odom:=odom</remapping>
-        <remapping>/diff_drive_base_controller/tf_odometry:=tf</remapping>
-      </ros>
+
       <parameters>$(find simple_commander)/config/diff_drive_controller.yaml</parameters>
     </plugin>
 
     <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
+
   </gazebo>
   
+
 </robot>

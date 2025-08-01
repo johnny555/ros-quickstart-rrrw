@@ -123,8 +123,8 @@ RUN rosdep update
 
 # Add Start Creating Robots Specific Depenencies: 
 
-RUN apt-get update \
-    && apt-get install -y ros-jazzy-turtlebot3-* \
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y ros-jazzy-turtlebot4-* ros-jazzy-ros-gz-* ros-jazzy-gz-ros2-control-demos ros-jazzy-rqt-robot-steering \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./setup_container.bash /

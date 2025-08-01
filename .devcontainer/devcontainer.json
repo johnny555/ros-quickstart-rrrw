@@ -10,9 +10,6 @@
     },
     "appPort": [
         "6080:80"
-    ],
-    "runArgs": [
-        "--network=host"
     ]
     
 }

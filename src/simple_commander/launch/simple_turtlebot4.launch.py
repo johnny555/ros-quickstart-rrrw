@@ -81,7 +81,6 @@ def generate_launch_description():
     robot_description_content = Command([
         'xacro', ' ',
         PathJoinSubstitution([pkg_simple_commander, 'urdf', 'turtlebot.urdf.xacro']),
-        ' gazebo:=none'
     ])
 
     # Gazebo launch
@@ -147,11 +146,13 @@ def generate_launch_description():
         name='ros_gz_bridges',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-            f'/{robot_name}/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-            f'/{robot_name}/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
-            '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model'
+            '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
+            '/world/maze/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked'
         ],
         output='screen'
+        , remappings=[
+            ('/world/maze/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '/points')
+        ]
     )
 
     # Diff Drive Controller - enables differential drive control
@@ -161,7 +162,17 @@ def generate_launch_description():
         arguments=['joint_state_broadcaster', 'diff_drive_controller'],
         output='screen'
     )
-
+    # RQT Robot Steering - GUI for teleoperation
+    rqt_robot_steering = Node(
+        package='rqt_robot_steering',
+        executable='rqt_robot_steering',
+        name='rqt_robot_steering',
+        output='screen',
+        arguments=['--force-discover'],
+        remappings=[
+            ('/cmd_vel', '/diff_drive_controller/cmd_vel')
+        ]
+    )
 
     # Create launch description and add actions
     ld = LaunchDescription(ARGUMENTS)
@@ -172,5 +183,6 @@ def generate_launch_description():
     ld.add_action(spawn_robot)
     ld.add_action(bridge)
     ld.add_action(control_spawner)
+    ld.add_action(rqt_robot_steering)
     
     return ld
