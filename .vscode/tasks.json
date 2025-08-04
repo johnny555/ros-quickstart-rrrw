@@ -17,12 +17,10 @@
 		{
 			"label": "turtlebot",
 			"type": "shell",
-			"command": "ros2",
+			"command": "bash",
 			"args": [
-				"launch",
-				"simple_commander",
-				"turtlebot4_teleop.launch.py",
-				"world:=maze"
+				"-c",
+				"source install/setup.bash && ros2 launch simple_commander simple_turtlebot4.launch.py world:=maze"
 			],
 			"group": "test",
 			"isBackground": true,
