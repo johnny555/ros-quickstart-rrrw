@@ -170,7 +170,8 @@ def generate_launch_description():
         output='screen',
         arguments=['--force-discover'],
         remappings=[
-            ('/cmd_vel', '/diff_drive_controller/cmd_vel')
+            ('/cmd_vel', '/diff_drive_controller/cmd_vel'),
+            ('/odom', '/diff_drive_controller/odom')
         ]
     )
 
