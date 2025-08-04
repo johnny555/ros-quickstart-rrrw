@@ -21,7 +21,7 @@
 			"args": [
 				"launch",
 				"simple_commander",
-				"turtlebot4_teleop.launch.py",
+				"simple_turtlebot4.launch.py",
 				"world:=maze"
 			],
 			"group": "test",
