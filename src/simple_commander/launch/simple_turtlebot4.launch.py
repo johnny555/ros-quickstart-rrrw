@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Simple TurtleBot4 launch file that starts:
 - Gazebo Harmonic
