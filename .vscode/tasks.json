@@ -15,13 +15,28 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Kill ROS/Gazebo",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-c",
+				"set -euo pipefail; echo \"Stopping ros2 daemon (if running)...\"; ros2 daemon stop || true; echo \"Killing Gazebo Sim processes...\"; pkill -f \"gz sim\" || true; pkill -x gz || true; pkill -x gzserver || true; pkill -x gzclient || true; pkill -x gazebo || true; pkill -x ign || true; echo \"Killing ros_gz_bridge processes...\"; pkill -f \"ros_gz_bridge\" || true; pkill -x parameter_bridge || true; echo \"Killing lingering ros2 launch/run processes...\"; pkill -f \"ros2 launch\" || true; pkill -f \"ros2 run\" || true; sleep 1; echo \"Cleanup done.\""
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "turtlebot",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-c",
-				"source install/setup.bash && ros2 launch simple_commander simple_turtlebot4.launch.py world:=maze"
+				"source install/setup.bash && ros2 launch simple_commander simple_turtlebot4.launch.py world:=april_maze"
 			],
+			"dependsOn": [
+				"Kill ROS/Gazebo",
+				"Build"
+			],
+			"dependsOrder": "sequence",
 			"group": "test",
 			"isBackground": true,
 			"problemMatcher": []

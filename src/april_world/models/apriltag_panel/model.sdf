@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<sdf version='1.8'>
+  <!-- Single rigid panel with small physical thickness to avoid z-fighting -->
+  <model name='apriltag_panel'>
+    <static>true</static>
+    <link name='panel'>
+      <inertial><mass>0.05</mass></inertial>
+      <!-- Give the panel a bit of thickness -->
+      <collision name='body_col'>
+        <geometry>
+          <box>
+            <size>0.02 0.4 0.4</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Front tag surface slightly in front of the body to avoid artifacts -->
+      <visual name='front_vis'>
+        <pose>0.011 0 0 0 0 0</pose>
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <plane>
+            <size>0.4 0.4</size>
+          </plane>
+        </geometry>
+        <material>
+          <double_sided>false</double_sided>
+          <transparency>0.0</transparency>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <pbr>
+            <metal>
+              <albedo_map>textures/apriltags/tag36_11_00000.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>0.8</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
+
+

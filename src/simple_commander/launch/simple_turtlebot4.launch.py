@@ -15,6 +15,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, IncludeLaunchDescription, RegisterEventHandler
+from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
@@ -26,7 +27,7 @@ ARGUMENTS = [
     DeclareLaunchArgument('use_sim_time', default_value='true',
                           choices=['true', 'false'],
                           description='Use simulation time'),
-    DeclareLaunchArgument('world', default_value='maze',
+    DeclareLaunchArgument('world', default_value='april_maze',
                           description='Gazebo world file (without .sdf extension)'),
     DeclareLaunchArgument('model', default_value='standard',
                           choices=['standard', 'lite'],
@@ -41,6 +42,9 @@ ARGUMENTS = [
                           description='Yaw orientation of robot spawn'),
     DeclareLaunchArgument('robot_name', default_value='turtlebot4',
                           description='Name of the robot in simulation'),
+    DeclareLaunchArgument('spawn_apriltags', default_value='false',
+                          choices=['true', 'false'],
+                          description='Spawn AprilTag panels model into the world')
 ]
 
 
@@ -59,6 +63,7 @@ def generate_launch_description():
     z = LaunchConfiguration('z')
     yaw = LaunchConfiguration('yaw')
     robot_name = LaunchConfiguration('robot_name')
+    spawn_apriltags = LaunchConfiguration('spawn_apriltags')
 
     # Controller configuration file
     controller_config = PathJoinSubstitution([
@@ -72,8 +77,17 @@ def generate_launch_description():
         name='GZ_SIM_RESOURCE_PATH',
         value=':'.join([
             os.environ.get('GZ_SIM_RESOURCE_PATH', ''),
+            # Put april_world ahead so its worlds/models are preferred
+            os.path.join(get_package_share_directory('april_world'), 'worlds'),
+            os.path.join(get_package_share_directory('april_world'), 'models'),
+            get_package_share_directory('april_world'),
+            # Also include simple_commander resources
+            os.path.join(pkg_simple_commander, 'worlds'),
+            os.path.join(pkg_simple_commander, 'models'),
+            pkg_simple_commander,
+            # Existing resources
+            os.path.join(get_package_share_directory('turtlebot4_gz_bringup'), 'worlds'),
             str(Path(pkg_turtlebot4_description).parent.resolve()),
-            os.path.join(get_package_share_directory('turtlebot4_gz_bringup'), 'worlds')
         ])
     )
 
@@ -139,6 +153,20 @@ def generate_launch_description():
         ],
         output='screen'
     )
+
+    # Optionally spawn AprilTag panels model when world is maze-based
+    spawn_apriltag_panels = Node(
+        package='ros_gz_sim',
+        executable='create',
+        condition=IfCondition(spawn_apriltags),
+        arguments=[
+            '-name', 'apriltag_panels',
+            '-file', PathJoinSubstitution([
+                get_package_share_directory('april_world'), 'models', 'apriltag_panels', 'model.sdf'
+            ])
+        ],
+        output='screen'
+    )
     # Combined ROS-Gazebo bridges for simulation time, cmd_vel, odometry, and joint states
     bridge = Node(
         package='ros_gz_bridge',
@@ -147,11 +175,11 @@ def generate_launch_description():
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
-            '/world/maze/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked'
+            ['/world/', world, '/model/', robot_name, '/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked']
         ],
         output='screen'
         , remappings=[
-            ('/world/maze/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '/points')
+            (['/world/', world, '/model/', robot_name, '/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points'], '/points')
         ]
     )
 
@@ -182,6 +210,8 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher)
     ld.add_action(joint_state_publisher)
     ld.add_action(spawn_robot)
+    # Spawn apriltag panels if requested
+    ld.add_action(spawn_apriltag_panels)
     ld.add_action(bridge)
     ld.add_action(control_spawner)
     ld.add_action(rqt_robot_steering)
