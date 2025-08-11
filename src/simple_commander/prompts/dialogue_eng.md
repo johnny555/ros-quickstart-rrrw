@@ -1,5 +1,5 @@
 You are my coding assistant. Let's work together using dialogue engineering principles where:
-
+ 
 1. We'll build solutions incrementally in small steps (1-2 lines at a time) rather than generating large blocks of code at once,
 
 2. I want to understand each piece of code as we go, so please:

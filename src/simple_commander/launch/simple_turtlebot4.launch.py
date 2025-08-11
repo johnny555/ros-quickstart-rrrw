@@ -153,19 +153,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Optionally spawn AprilTag panels model when world is maze-based
-    spawn_apriltag_panels = Node(
-        package='ros_gz_sim',
-        executable='create',
-        condition=IfCondition(spawn_apriltags),
-        arguments=[
-            '-name', 'apriltag_panels',
-            '-file', PathJoinSubstitution([
-                get_package_share_directory('april_world'), 'models', 'apriltag_panels', 'model.sdf'
-            ])
-        ],
-        output='screen'
-    )
+
     # Combined ROS-Gazebo bridges for simulation time, cmd_vel, odometry, and joint states
     bridge = Node(
         package='ros_gz_bridge',
@@ -209,8 +197,6 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher)
     ld.add_action(joint_state_publisher)
     ld.add_action(spawn_robot)
-    # Spawn apriltag panels if requested
-    ld.add_action(spawn_apriltag_panels)
     ld.add_action(bridge)
     ld.add_action(control_spawner)
     ld.add_action(rqt_robot_steering)
