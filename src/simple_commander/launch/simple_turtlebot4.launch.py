@@ -43,7 +43,16 @@ ARGUMENTS = [
                           description='Name of the robot in simulation'),
     DeclareLaunchArgument('spawn_apriltags', default_value='false',
                           choices=['true', 'false'],
-                          description='Spawn AprilTag panels model into the world')
+                          description='Spawn AprilTag panels model into the world'),
+    DeclareLaunchArgument('use_rviz', default_value='false',
+                          choices=['true', 'false'],
+                          description='Launch RViz2 with explorer bot configuration'),
+    DeclareLaunchArgument('use_slam', default_value='true',
+                          choices=['true', 'false'],
+                          description='Enable SLAM toolbox for mapping'),
+    DeclareLaunchArgument('use_nav2', default_value='true',
+                          choices=['true', 'false'],
+                          description='Enable Nav2 navigation stack')
 ]
 
 
@@ -63,6 +72,9 @@ def generate_launch_description():
     yaw = LaunchConfiguration('yaw')
     robot_name = LaunchConfiguration('robot_name')
     spawn_apriltags = LaunchConfiguration('spawn_apriltags')
+    use_rviz = LaunchConfiguration('use_rviz')
+    use_slam = LaunchConfiguration('use_slam')
+    use_nav2 = LaunchConfiguration('use_nav2')
 
     # Controller configuration file
     controller_config = PathJoinSubstitution([
@@ -84,6 +96,8 @@ def generate_launch_description():
             os.path.join(pkg_simple_commander, 'worlds'),
             os.path.join(pkg_simple_commander, 'models'),
             pkg_simple_commander,
+            # Include system ROS packages for irobot_create_description meshes
+            '/opt/ros/jazzy/share',
             # Existing resources
             os.path.join(get_package_share_directory('turtlebot4_gz_bringup'), 'worlds'),
             str(Path(pkg_turtlebot4_description).parent.resolve()),
@@ -190,6 +204,85 @@ def generate_launch_description():
         ]
     )
 
+    # SLAM Toolbox - for mapping
+    slam_toolbox = Node(
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox',
+        output='screen',
+        parameters=[
+            PathJoinSubstitution([
+                pkg_simple_commander,
+                'config',
+                'slam_toolbox.yaml'
+            ]),
+            {'use_sim_time': use_sim_time}
+        ],
+        condition=IfCondition(use_slam),
+        remappings=[
+            ('/scan', '/scan_converted')
+        ]
+    )
+
+    # Pointcloud to Laserscan converter - convert RGBD pointcloud to laser scan for SLAM
+    pointcloud_to_laserscan = Node(
+        package='pointcloud_to_laserscan',
+        executable='pointcloud_to_laserscan_node',
+        name='pointcloud_to_laserscan',
+        output='screen',
+        parameters=[
+            {'use_sim_time': use_sim_time},
+            {'target_frame': 'base_link'},
+            {'transform_tolerance': 0.01},
+            {'min_height': -0.5},
+            {'max_height': 2.0},
+            {'angle_min': -1.5708},  # -90 degrees
+            {'angle_max': 1.5708},   # 90 degrees
+            {'angle_increment': 0.0087},  # ~0.5 degrees
+            {'scan_time': 0.3333},
+            {'range_min': 0.45},
+            {'range_max': 4.0},
+            {'use_inf': True},
+            {'inf_epsilon': 1.0}
+        ],
+        remappings=[
+            ('/cloud_in', '/points'),
+            ('/scan', '/scan_converted')
+        ]
+    )
+
+    # Nav2 navigation stack
+    nav2_bringup = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                get_package_share_directory('nav2_bringup'), 
+                'launch', 
+                'navigation_launch.py'
+            ])
+        ]),
+        launch_arguments=[
+            ('use_sim_time', use_sim_time),
+            ('slam', 'False'),  # We're using slam_toolbox separately
+            ('map', ''),  # No pre-built map needed for SLAM
+        ],
+        condition=IfCondition(use_nav2)
+    )
+
+    # RViz2 with custom configuration
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', PathJoinSubstitution([
+            pkg_simple_commander,
+            'rviz',
+            'explorer_bot.rviz'
+        ])],
+        parameters=[{'use_sim_time': use_sim_time}],
+        condition=IfCondition(use_rviz)
+    )
+
     # Create launch description and add actions
     ld = LaunchDescription(ARGUMENTS)
     ld.add_action(gz_resource_path)
@@ -200,5 +293,9 @@ def generate_launch_description():
     ld.add_action(bridge)
     ld.add_action(control_spawner)
     ld.add_action(rqt_robot_steering)
+    ld.add_action(pointcloud_to_laserscan)
+    ld.add_action(slam_toolbox)
+    ld.add_action(nav2_bringup)
+    ld.add_action(rviz2)
     
     return ld

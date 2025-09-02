@@ -58,6 +58,7 @@ Create a test node `test/test_navigation_basic.py` that:
 - Monitors goal acceptance and completion
 - Verifies robot movement through odometry data
 - Tests goal cancellation functionality
+- Use nose or pytest to create tests
 
 ### Testing Criteria
 - **Test 1**: Basic navigation goal acceptance

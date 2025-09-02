@@ -2,3 +2,6 @@
 	path = src/turtlebot4_simulator
 	url = https://github.com/turtlebot/turtlebot4_simulator.git
 	branch = jazzy
+[submodule "src/turtlebot4"]
+	path = src/turtlebot4
+	url = https://github.com/johnny555/turtlebot4.git

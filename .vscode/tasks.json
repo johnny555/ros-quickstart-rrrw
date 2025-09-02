@@ -19,8 +19,8 @@
 			"type": "shell",
 			"command": "bash",
 			"args": [
-				"-c",
-				"set -euo pipefail; echo \"Stopping ros2 daemon (if running)...\"; ros2 daemon stop || true; echo \"Killing Gazebo Sim processes...\"; pkill -f \"gz sim\" || true; pkill -x gz || true; pkill -x gzserver || true; pkill -x gzclient || true; pkill -x gazebo || true; pkill -x ign || true; echo \"Killing ros_gz_bridge processes...\"; pkill -f \"ros_gz_bridge\" || true; pkill -x parameter_bridge || true; echo \"Killing lingering ros2 launch/run processes...\"; pkill -f \"ros2 launch\" || true; pkill -f \"ros2 run\" || true; sleep 1; echo \"Cleanup done.\""
+				"-c", 
+				"echo 'Thorough ROS/Gazebo cleanup...'; ros2 daemon stop 2>/dev/null || true; ps aux | grep -E '(ros|gazebo|gz|nav2|slam|rqt|rviz|apriltag|pointcloud)' | grep -v grep | awk '{print $2}' | xargs -r kill -9 2>/dev/null; sleep 2; REMAINING=$(ps aux | grep -E '(ros|gazebo|gz|nav2|slam)' | grep -v grep | wc -l); echo \"Remaining processes: $REMAINING\"; echo 'Cleanup complete!'"
 			],
 			"problemMatcher": []
 		},

@@ -14,7 +14,6 @@
   <!-- Include the standard TurtleBot4 URDF with gazebo set to ignition -->
   <xacro:include filename="$(find turtlebot4_description)/urdf/standard/turtlebot4.urdf.xacro" />
   
-
 <!-- ROS2 Control Transmission for Wheel Joints -->
 <ros2_control name="gazebo_ros2_control" type="system">
       <hardware>
@@ -31,7 +30,6 @@
         <state_interface name="velocity"/>
     </joint>
 </ros2_control>
-  
   
   <gazebo>
      <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">

@@ -23,7 +23,7 @@ Create the `explorer_bot` ROS 2 package with proper dependencies and structure.
   - `apriltag_ros`
   - `turtlebot4_simulator`
   - `pointcloud_to_laserscan` (for RGBD camera to laser scan conversion)
-
+- It's ok to use `apt` to install missing packages like `ros-jazzy-apriltag-ros` and `ros-jazzy-pointcloud-to-laserscan`
 ### Directory Structure
 Create the following directories in the package:
 ```
@@ -38,7 +38,7 @@ explorer_bot/
 
 ### Testing Criteria
 - **Test 1**: Verify package creation using `colcon list | grep explorer_bot`
-- **Test 2**: Verify package builds successfully using `colcon build --merge-install --symlink-install --packages-select explorer_bot`
+- **Test 2**: Verify package builds successfully using `cd /workspace; colcon build --merge-install --symlink-install --packages-select explorer_bot`
 
 ## Step 1.2: Launch File Development
 
@@ -69,9 +69,20 @@ Create a comprehensive launch file that integrates all necessary components for 
   - Scan topic: `/scan_converted` (converted from PointCloud2)
   
 - **Navigation2**:
+  - Use the default config at `/opt/ros/jazzy/share/nav2_bringup/params/nav2_params.yaml` to avoid errors.
   - Global planner: `NavfnPlanner`
   - Local planner: `DWBLocalPlanner`
   - Recovery behaviors: `spin`, `backup`
+  - Make sure to use `::` for specifying plugins namespaces, e.g. "nav2_navfn_planner::NavfnPlanner"
+  - Make sure to configure the `collision_monitor` node
+  - You can leave the bt_navigators plugin list empty as in jazzy sensible plugins are loaded by default.
+  - Make sure to add docking_server parameters
+  - You don't need amcl parameters because we are using slam_toolbox instead
+  - Pay careful attention to yaml types, e.g. wait_for_service_timeout needs an integer not a float.
+  - Allow larger transform timeout intervals, of up to 0.5 seconds for the purpose of simulation on slow hardware.
+  - Make sure to set the enable_stamped_cmd_vel parameter in all nav2 nodes so they use stamped twist messages.
+  - Make sure to publish to /diff_drive_controller/cmd_vel 
+ 
   
 - **April Tag Detection**:
   - Tag family: `36h11`
@@ -90,3 +101,4 @@ The launch file should include:
 ### Testing Criteria
 - **Test 1**: Verify all required nodes are running using `ros2 node list`
 - **Test 2**: Verify all required topics are published using `ros2 topic list`
+- **Test 3**: Verify nav2 lifecyle nodes are up by checking all actions are running with `ros2 action list`
